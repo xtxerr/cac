@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<events>
+
+<!-- Thresholds of XML-Collector -->
+  <event>
+	<uei>uei.opennms.org/cisco-apic/HighPolCamUsage-trigger</uei>
+    <event-label>The threshhold of the policer CAM table of a node in the Cisco APIC fabric was reached</event-label>
+    <descr>
+	  %parm[description]%
+    </descr>
+    <logmsg dest="logndisplay">
+	  Node %parm[instance]% of the APIC fabric has reached a critical point in policer CAM usage of %parm[value]% percent usage.
+    </logmsg>
+    <severity>Major</severity>
+    <alarm-data reduction-key="%uei%:%dpname%:%nodeid%:%interface%:%service%" alarm-type="1" auto-clean="false"/>
+  </event>
+  <event>
+	<uei>uei.opennms.org/cisco-apic/HighPolCamUsage-rearm</uei>
+    <event-label>The rearm threshhold of the policer CAM table of a node in the Cisco APIC fabric was reached</event-label>
+    <descr>
+	  %parm[description]%
+    </descr>
+    <logmsg dest="logndisplay">
+	  Node %parm[instance]% of the APIC fabric has fallen below the critical point in policer CAM usage of %parm[value]% percent usage.
+	  The alarm has been cleared.
+    </logmsg>
+    <severity>Normal</severity>
+	<alarm-data reduction-key="%uei%:%dpname%:%nodeid%:%interface%:%service%" alarm-type="2" clear-key="uei.opennms.org/cisco-apic/HighPolCamUsage-trigger:%dpname%:%nodeid%:%interface%:%service%" auto-clean="false"/>
+  </event>
+
+<!-- Created events by using send-event.pl -->
+  <event>
+	<uei>uei.opennms.org/cisco-apic/fault/Critical</uei>
+    <event-label>A critical fault on a Cisco APIC fabric was recognized</event-label>
+    <descr>
+		A critical fault on a Cisco APIC fabric was recognized &lt;/p&gt;
+		%parm[descr]% &lt;/p&gt;
+    </descr>
+    <logmsg dest="logndisplay">
+		%parm[all]%
+    </logmsg>
+    <severity>Critical</severity>
+    <alarm-data reduction-key="%uei%:%dpname%:%nodeid%:%interface%:%parm[domain]%:%parm[code]%" alarm-type="1" auto-clean="true"/>
+  </event>
+  <event>
+	<uei>uei.opennms.org/cisco-apic/fault/Major</uei>
+    <event-label>A major fault on a Cisco APIC fabric was recognized</event-label>
+    <descr>
+		A major fault on a Cisco APIC fabric was recognized &lt;/p&gt;
+		%parm[descr]% &lt;/p&gt;
+    </descr>
+    <logmsg dest="logndisplay">
+		%parm[all]%
+    </logmsg>
+    <severity>Major</severity>
+    <alarm-data reduction-key="%uei%:%dpname%:%nodeid%:%interface%:%parm[domain]%:%parm[code]%" alarm-type="1" auto-clean="true"/>
+  </event>
+  <event>
+	<uei>uei.opennms.org/cisco-apic/fault/Minor</uei>
+    <event-label>A minor fault on a Cisco APIC fabric was recognized</event-label>
+    <descr>
+		A minor fault on a Cisco APIC fabric was recognized &lt;/p&gt;
+		%parm[descr]% &lt;/p&gt;
+    </descr>
+    <logmsg dest="logndisplay">
+		%parm[all]%
+    </logmsg>
+    <severity>Minor</severity>
+    <alarm-data reduction-key="%uei%:%dpname%:%nodeid%:%interface%:%parm[domain]%:%parm[code]%" alarm-type="1" auto-clean="true"/>
+  </event>
+  <event>
+	<uei>uei.opennms.org/cisco-apic/fault/Warning</uei>
+    <event-label>A warning on a Cisco APIC fabric was recognized</event-label>
+    <descr>
+		A warning on a Cisco APIC fabric was recognized &lt;/p&gt;
+		%parm[descr]% &lt;/p&gt;
+    </descr>
+    <logmsg dest="logndisplay">
+		%parm[all]%
+    </logmsg>
+    <severity>Warning</severity>
+  </event>
+  <event>
+	<uei>uei.opennms.org/cisco-apic/fault/Normal</uei>
+    <event-label>An event on a Cisco APIC fabric was recognized</event-label>
+    <descr>
+		An event on a Cisco APIC fabric was recognized &lt;/p&gt;
+		%parm[descr]% &lt;/p&gt;
+    </descr>
+    <logmsg dest="logndisplay">
+		%parm[all]%
+    </logmsg>
+    <severity>Normal</severity>
+  </event>
+
+</events>

@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<datacollection-group name="APIC">
+
+  <resourceType name="resPolicerCam" label="Policer cam usage" resourceLabel="${nodeName}" >
+      <persistenceSelectorStrategy class="org.opennms.netmgt.collection.support.PersistAllSelectorStrategy"/>
+      <storageStrategy class="org.opennms.netmgt.collection.support.IndexStorageStrategy"/>
+  </resourceType>
+
+  <resourceType name="resFabricInterfaces" label="Fabric Interfaces" resourceLabel="${nodeIf} ${descr}" >
+	<persistenceSelectorStrategy class="org.opennms.netmgt.collectd.PersistRegexSelectorStrategy" >
+		<parameter key="match-expression" value="#usage == 'fabric'" />
+	</persistenceSelectorStrategy>
+    <storageStrategy class="org.opennms.netmgt.collection.support.IndexStorageStrategy"/>
+  </resourceType>
+
+  <resourceType name="resFabricFabricExtInterfaces" label="Fabric-External Interfaces" resourceLabel="${nodeIf} ${descr}" >
+    <persistenceSelectorStrategy class="org.opennms.netmgt.collectd.PersistRegexSelectorStrategy" >
+		<parameter key="match-expression" value="#usage == 'fabric,fabric-ext'" />
+	</persistenceSelectorStrategy>
+    <storageStrategy class="org.opennms.netmgt.collection.support.IndexStorageStrategy"/>
+  </resourceType>
+
+  <resourceType name="resControllerEpgInfraInterfaces" label="Controller-EPG-Infra Interfaces" resourceLabel="${nodeIf} ${descr}" >
+    <persistenceSelectorStrategy class="org.opennms.netmgt.collectd.PersistRegexSelectorStrategy" >
+		<parameter key="match-expression" value="#usage == 'controller,epg,infra'" />
+	</persistenceSelectorStrategy>
+    <storageStrategy class="org.opennms.netmgt.collection.support.IndexStorageStrategy"/>
+  </resourceType>
+
+ <!-- example     <persistenceSelectorStrategy class="org.opennms.netmgt.collection.support.PersistAllSelectorStrategy"/> -->
+
+</datacollection-group>
