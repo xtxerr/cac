@@ -6,5 +6,4 @@ Various things to integrate Cisco's ACI into OpenNMS via ReST.
 - Interface Accounting grouped by APIC types.
 
 - All ReST calls are done in non-blocking fashion via Mojo's event loop.
-- Needs to executed via cron.
-
+- Needs to be executed periodically, eg. cron.
