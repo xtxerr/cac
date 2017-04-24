@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 #
 # non-blocking REST-based APIC poller
-# copyrights Christian Meutes
 #
 use warnings;
 use strict;
