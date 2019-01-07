@@ -1,6 +1,6 @@
-# Cisco-APIC-Collector
+# apic-state-collector
 
-Cisco APIC Collector, which collects all sorts of data in non-blocking fashion, if needed, on multiple controllers in parallel. Creates statistics for OpenNMS collectd and sends events via raw TCP to OpenNMS eventd. 
+Cisco APIC Collector, which collects all sorts of data in non-blocking fashion, if needed, from multiple controllers in parallel. Creates statistics for OpenNMSes 'collectd' and generate/send events via raw TCP to OpenNMS 'eventd'. 
 
 - Alarming and Event Notifications via OpenNMS's eventd.
 - Interface Accounting grouped by APIC types.
