@@ -22,9 +22,9 @@ my @apics = (
 # max requests per apic controller in parallel
 my $max_req = 10;
 # where to put data onto the filesystem
-my $data_path  = '/yourpath/data/';
+my $data_path  = "/change/me/";
 # apic protocol
-my $apic_scheme = 'https';
+my $apic_scheme = "https";
 # controller credentials
 my $apic_credentials = { aaaUser =>
                            { attributes =>
