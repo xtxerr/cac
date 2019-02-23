@@ -1,19 +1,13 @@
-### apic-state-collector
-
 Cisco APIC Collector, which collects all sorts of data in non-blocking fashion, if needed, from multiple controllers in parallel. Creates statistics for OpenNMS 'collectd' and creates events through raw TCP in OpenNMS 'eventd'. 
 
-- Alarming and Event Notifications via OpenNMS's eventd.
-- Interface Accounting grouped by APIC types.
-- All ReST calls are done in non-blocking fashion in event loop.
-- Needs to be executed periodically, eg. cron.
-- Creates XML files for OpenNMS collectd's XML collector.
-
-
+- Alarming and Event Notification via OpenNMS's eventd
+- Interface Accounting grouped by APIC types
+- All ReST calls are done in non-blocking event loop
+- Creates XML files for OpenNMS collectd
 
 #### License and Copyright
 
 Copyright 2017 Christian Meutes <christian@errxtx.net>
-
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

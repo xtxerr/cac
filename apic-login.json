@@ -1,8 +1,8 @@
 {
-	"aaaUser":{
-		"attributes":{
-			"name":"yourloging",
-			"pwd":"yourpassword"
-		}
-	}
+    "aaaUser":{
+        "attributes":{
+            "name":"yourloging",
+            "pwd":"yourpassword"
+        }
+    }
 }
