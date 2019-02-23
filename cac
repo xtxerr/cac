@@ -21,9 +21,9 @@ my @apics = (
 );
 # max requests per apic controller in parallel
 my $max_req = 10;
-# where to put data onto the filesystem
+# xml output
 my $data_path  = "/change/me/";
-# apic protocol
+# apic connection scheme
 my $apic_scheme = "https";
 # controller credentials
 my $apic_credentials = { aaaUser =>
@@ -48,25 +48,23 @@ my @skip_ifusage = (qr/discovery/);
 # REST pathes/query strings
 my $onms_nodeurl = "http://$onms_user:$onms_pass@$onms_host" .
                    "/opennms/rest/nodes/?foreignId=";
-my $login_path = "/api/aaaLogin.json";
-my $polcap_path = "/api/class/eqptcapacityEntity.xml?" .
-                  "query-target=self&" .
-                  "rsp-subtree-include=stats&" .
-                  "rsp-subtree-class=eqptcapacityPolUsage5min";
+my $login_path   = "/api/aaaLogin.json";
+my $polcap_path  = "/api/class/eqptcapacityEntity.xml?" .
+                   "query-target=self&" .
+                   "rsp-subtree-include=stats&" .
+                   "rsp-subtree-class=eqptcapacityPolUsage5min";
 my $ifstats_path = "/api/node/mo/topology/pod-1/node-N/sys/phys-N/" .
                    "HDeqptXXXTotal5min-0.xml";
-my $fault_path = "/api/node/class/faultSummary.xml";
-my $node_path = "/api/node/class/fabricNode.xml";
-my $intf_path = "/api/node/class/topology/pod-1/";
+my $fault_path   = "/api/node/class/faultSummary.xml";
+my $node_path    = "/api/node/class/fabricNode.xml";
+my $intf_path    = "/api/node/class/topology/pod-1/";
 
 ## MAIN ##
 
-    # {{{ get fqdn of apic nodes #
-    ##############################
+# {{{ get fqdn of apic nodes
 my $ua = new Mojo::UserAgent->new;
 my $delay = Mojo::IOLoop::Delay->new;
 my $client = Mojo::IOLoop::Client->new;
-
 for my $href (@apics) {
     my @addr = gethostbyname( $href->{name} );
     my $hostname;
@@ -75,8 +73,8 @@ for my $href (@apics) {
         $href->{hostname} = $href->{name};
     }
 } # }}}
-    # {{{ first event loop 
-    ###########################################################
+
+# {{{ first event loop 
 # parallelized but synchronized event queue
 Mojo::IOLoop::Delay->new->steps(
     sub {
@@ -105,11 +103,11 @@ Mojo::IOLoop::Delay->new->steps(
             }
         }
     }
-)->wait; # }}}
-    # {{{ Second event loop - get Interface stats
+)->wait; 
+# }}}
 
+# {{{ Second event loop - get Interface stats
 my %intfstats;
-
 # temp hash of arrays per APIC 
 my %requests;
 for my $href (@apics) {
@@ -147,32 +145,25 @@ for my $interfaces (values %requests) {
 }
 $delay->wait;
 
-        # {{{ sub Get interface stats, nonblocking recursive callback
+# {{{ sub Get interface stats, nonblocking recursive callback
 sub ifstats {
     my ( $delay, $ua, $queue ) = @_;
-
     # Stop if no more URLs left in the queue
     return unless my $intf_hash = shift @{ $queue };
-
     my $nodeid = $intf_hash->{node};
     my $intfid = $intf_hash->{id};
     my $ip = $intf_hash->{apicip};
     my $apic = $intf_hash->{apic};
     my $dir = $intf_hash->{dir};
-
     my $path = $ifstats_path =~ s/node-N/node-$nodeid/r;
     $path =~ s/phys-N/phys-\[$intfid\]/;
     $path =~ s/XXX/$dir/;
-
     my $ifstats_url = $apic_scheme."://".$ip.$path;
-
     # Increment even stack
     my $ifstats_end = $delay->begin;
-
     $ua->get ( $ifstats_url => { Accept => 'application/xml'} => sub {
         # recursive callback until queue is empty
         my ( $ua, $tx ) = @_;
-
         if (my $res = $tx->success) {
             my $ifstats_dom = Mojo::DOM->new($tx->res->body);
             my $result = $ifstats_dom->at('eqpt'.$dir.'TotalHist5min');
@@ -192,8 +183,10 @@ sub ifstats {
             ifstats ( $delay, $ua, $queue );
         }
     });
-} # }}}
-        # {{{ clean up
+}
+# }}}
+
+# {{{ clean up
 for my $href (@apics) {
     for my $node ( @{ $href->{fabricNodes} } ) {
         for my $intf ( @{ $node->{'l1PhysIf'} } ) {
@@ -205,10 +198,11 @@ for my $href (@apics) {
             }
         }
     }
-} # }}}
-
+}
 # }}}
-    # {{{ XML creation
+# }}}
+    
+# {{{ XML creation
 my %ifstats;
 for my $href (@apics) {
     for my $node ( @{ $href->{fabricNodes} } ) {
@@ -231,18 +225,15 @@ for my $href (@apics) {
         }
     }
 }
-
 ifstats_xml ( \%ifstats );
 # }}}
 
 ### MAIN END ##
 
-    # {{{ sub ifstats_xml #
-    #######################
+# {{{ sub ifstats_xml
 # create interface stats xml files for OpenNMS
 sub ifstats_xml {
     my $ifstats_hashref = shift;
-
     for my $aref (keys %{ $ifstats_hashref } ) {
         # Create ifstats files for OpenNMS
         my $filename = $data_path."/capacity/interfaces/".$aref.".xml";
@@ -272,16 +263,15 @@ sub ifstats_xml {
             say "Oops, something went wrong, can't create interface data";
         }
     }
-} # }}}
-    # sub apic_login {{{ #
-    ######################
+}
+# }}}
+
+# sub apic_login {{{
 sub apic_login {
     my ( $delay, $ua, $aref ) = @_;
-
     my $url = $apic_scheme."://".$aref->{ip}.$login_path;
     # Create event counter / increment even stack
     my $end = $delay->begin;
-
     $ua->post ($url => json => $apic_credentials => sub {
         # Callback
         my ( $ua, $tx ) = @_;
@@ -296,27 +286,26 @@ sub apic_login {
             $end->();
         }
     });
-} # }}}
-    # sub apic_data {{{ #
+}
+# }}}
+
+# {{{ sub apic_data
 sub apic_data {
     my ( $delay, $ua, $aref ) = @_;
-
     # start policer-capacity
     pol_capacity ( $delay, $ua, $aref );
-
     # start faults
     faults ( $delay, $ua, $aref );
-
     # start nodes & interface data
     node_intf ( $delay, $ua, $aref );
-} # }}}
-    # sub ua_get {{{ #
+}
+# }}}
+    
+# sub ua_get {{{
 sub ua_get {
     my ( $delay, $ua, $url, $aref, $helper ) = @_;
-
     # Create event counter / increment even stack
     my $end = $delay->begin;
-
     $ua->get ($url => { Accept => 'application/xml'} => sub {
         # Callback
         my ( $ua, $tx ) = @_;
@@ -333,14 +322,14 @@ sub ua_get {
             $end->();
         }
     });
-} # }}}
-    # sub pol-capacity {{{ #
+}
+# }}}
+
+# {{{ sub pol-capacity
 sub pol_capacity {
     my ( $delay, $ua, $aref ) = @_;
-
     my $helper = sub {
         my ( $delay, $ua, $tx, $aref ) = @_;
-
         # Replace full DN in capacity data with simple DN
         my $dom = Mojo::DOM->new($tx->res->body);
         for my $el ($dom->find('eqptcapacityEntity')->each) {
@@ -359,15 +348,15 @@ sub pol_capacity {
     my $polcap_url = $apic_scheme."://".$aref->{ip}.$polcap_path;
     # non-blocking call to ua_get()
     ua_get( $delay, $ua, $polcap_url, $aref, $helper );
-} # }}}
-    # sub faults {{{ #
+}
+# }}}
+
+# {{{ sub faults
 sub faults {
     my ( $delay, $ua, $aref ) = @_;
-
     # fault code
     my $helper = sub {
         my ( $delay, $ua, $tx, $aref ) = @_;
-
         my $dom = Mojo::DOM->new($tx->res->body);
         for my $el ($dom->find('faultSummary')->each) {
             # ('Mojo::DOM::HTML' object)
@@ -377,15 +366,15 @@ sub faults {
     my $fault_url = $apic_scheme."://".$aref->{ip}.$fault_path;
     # non-blocking call to ua_get()
     ua_get( $delay, $ua, $fault_url, $aref, $helper );
-} # }}}
-    # sub nodes {{{ #
+}
+# }}}
+    
+# {{{ sub nodes 
 sub nodes {
     my ( $delay, $ua, $aref ) = @_;
-
     my $intf_helper = sub {
         my ( $delay, $ua, $tx, $apic_node ) = @_;
         my ( $node, $aref ) = ( $apic_node->{node}, $apic_node->{apic} );
-
         my $attr = { %{ $node->attr } };
         my $intf_dom = Mojo::DOM->new($tx->res->body);
         # Iterate over all interfaces
@@ -396,7 +385,6 @@ sub nodes {
     };
     my $helper = sub {
         my ( $delay, $ua, $tx, $aref ) = @_;
-
         my $dom = Mojo::DOM->new($tx->res->body);
         # Iterate over all nodes
         for my $node ($dom->find('fabricNode')->each) {
@@ -409,11 +397,12 @@ sub nodes {
     my $node_url = $apic_scheme."://".$aref->{ip}.$node_path;
     # non-blocking call to ua_get()
     ua_get( $delay, $ua, $node_url, $aref, $helper );
-} # }}}
-    # sub node_intf {{{ #
+}
+# }}}
+
+# {{{ sub node_intf 
 sub node_intf {
     my ( $delay, $ua, $aref ) = @_;
-
     my $node_url = $apic_scheme."://".$aref->{ip}.$node_path;
     # Increment event stack
     my $end = $delay->begin;
@@ -466,8 +455,10 @@ sub node_intf {
             $end->();
         }
     });
-} # }}}
-    # sub onms_id {{{ #
+}
+# }}}
+
+# {{{ sub onms_id 
 sub onms_id {
     my ( $delay, $ua, $aref ) = @_;
     my $helper = sub {
@@ -479,12 +470,13 @@ sub onms_id {
     my $onms_url = $onms_nodeurl.$aref->{name};
     # non-blocking call to ua_get()
     ua_get( $delay, $ua, $onms_url, $aref, $helper );
-} # }}}
-    # sub send_event {{{ #
+}
+# }}}
+
+# {{{ sub send_event 
 sub send_event {
     my ( $delay, $client, $fault, $node_id, $hostname ) = @_;
     my $time = strftime '%A, %d %B %Y %-H:%M:%S o\'clock GMT', gmtime();
-
     # map apic severity 'info' to opennms 'normal'
     my $severity = $fault->attr->{'severity'};
     if ($severity eq "info") {
@@ -504,5 +496,6 @@ sub send_event {
         print $socket $event;
         $socket->close();
     }
-} # }}}
+}
+# }}}
 
